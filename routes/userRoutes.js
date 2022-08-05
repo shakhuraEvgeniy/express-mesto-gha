@@ -6,4 +6,5 @@ userRoutes.get("/", getUsers);
 userRoutes.get("/:userId", getUserById);
 userRoutes.post("/", express.json(), createUser);
 
+
 module.exports = userRoutes;
