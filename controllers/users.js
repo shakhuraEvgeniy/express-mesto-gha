@@ -11,9 +11,33 @@ const getUserById = async (req, res) => {
 };
 
 const createUser = async (req, res) => {
-  const { name, abour, avatar } = req.body;
-  const user = await User.create({ name, abour, avatar });
+  const { name, about, avatar } = req.body;
+  const user = await User.create({ name, about, avatar });
   res.send(user);
 };
 
-module.exports = { getUsers, getUserById, createUser };
+const updateUser = async (req, res) => {
+  const userId = req.user._id;
+  const { name, about } = req.body;
+  const user = await User.findByIdAndUpdate(
+    userId,
+    { name, about },
+    { new: true }
+  );
+  res.send(user);
+};
+
+const updateAvatar = async (req, res) => {
+  const userId = req.user._id;
+  const { avatar } = req.body;
+  const user = await User.findByIdAndUpdate(userId, { avatar }, { new: true });
+  res.send(user);
+};
+
+module.exports = {
+  getUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  updateAvatar,
+};
