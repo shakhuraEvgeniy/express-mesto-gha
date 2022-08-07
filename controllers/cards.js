@@ -1,40 +1,114 @@
 const Card = require("../models/card");
 
 const getCards = async (req, res) => {
-  const cards = await Card.find({});
-  res.send(cards);
+  try {
+    const cards = await Card.find({});
+    res.send(cards);
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      res.status(400);
+      res.send({
+        message: "Переданы некорректные данные при создании карточки",
+      });
+      return;
+    }
+    res.status(500);
+    res.send(err.message);
+  }
 };
 
 const createCard = async (req, res) => {
-  const { name, link } = req.body;
-  const owner = req.user._id;
-  const card = await Card.create({ name, link, owner });
-  res.send(card);
+  try {
+    const { name, link } = req.body;
+    const owner = req.user._id;
+    const card = await Card.create({ name, link, owner });
+    res.send(card);
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      res.status(400);
+      res.send({
+        message: "Переданы некорректные данные при создании карточки",
+      });
+      return;
+    }
+    res.status(500);
+    res.send(err.message);
+  }
 };
 
 const deleteCard = async (req, res) => {
-  const card = await Card.findByIdAndRemove(req.params.cardId);
-  res.send(card);
+  try {
+    const card = await Card.findByIdAndRemove(req.params.cardId);
+    res.send(card);
+  } catch (err) {
+    if (err.name === "CastError") {
+      res.status(404);
+      res.send({
+        message: "Карточка с указанным _id не найдена.",
+      });
+      return;
+    }
+    res.status(500);
+    res.send(err.message);
+  }
 };
 
 const likeCard = async (req, res) => {
-  const userId = req.user._id;
-  const card = await Card.findByIdAndUpdate(
-    req.params.cardId,
-    { $addToSet: { likes: userId } },
-    { new: true }
-  );
-  res.send(card);
+  try {
+    const userId = req.user._id;
+    const card = await Card.findByIdAndUpdate(
+      req.params.cardId,
+      { $addToSet: { likes: userId } },
+      { new: true }
+    );
+    res.send(card);
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      res.status(400);
+      res.send({
+        message: "Переданы некорректные данные для постановки/снятии лайка.",
+      });
+      return;
+    }
+    if (err.name === "CastError") {
+      res.status(404);
+      res.send({
+        message: "Передан несуществующий _id карточки.",
+      });
+      return;
+    }
+    res.status(500);
+    res.send(err.message);
+  }
 };
 
 const dislikeCard = async (req, res) => {
-  const userId = req.user._id;
-  const card = await Card.findByIdAndUpdate(
-    req.params.cardId,
-    { $pull: { likes: userId } },
-    { new: true }
-  );
-  res.send(card);
+  try {
+    const userId = req.user._id;
+    const card = await Card.findByIdAndUpdate(
+      req.params.cardId,
+      { $pull: { likes: userId } },
+      { new: true }
+    );
+    res.send(card);
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      res.status(400);
+      res.send({
+        message: "Переданы некорректные данные для постановки/снятии лайка.",
+      });
+      return;
+    }
+    if (err.name === "CastError") {
+      res.status(404);
+      res.send({
+        message: "Передан несуществующий _id карточки.",
+      });
+      return;
+    }
+    res.status(500);
+    res.send(err.message);
+  }
 };
 
 module.exports = { getCards, createCard, deleteCard, likeCard, dislikeCard };
