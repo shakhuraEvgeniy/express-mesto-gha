@@ -59,8 +59,15 @@ const likeCard = async (req, res) => {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
       { $addToSet: { likes: userId } },
-      { new: true }
+      { new: true, runValidators: true }
     );
+    if (!card) {
+      res.status(404);
+      res.send({
+        message: "Передан несуществующий _id карточки.",
+      });
+      return;
+    }
     res.send(card);
   } catch (err) {
     if (err.name === "ValidationError") {
@@ -71,7 +78,7 @@ const likeCard = async (req, res) => {
       return;
     }
     if (err.name === "CastError") {
-      res.status(404);
+      res.status(400);
       res.send({
         message: "Передан несуществующий _id карточки.",
       });
@@ -88,8 +95,15 @@ const dislikeCard = async (req, res) => {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
       { $pull: { likes: userId } },
-      { new: true }
+      { new: true, runValidators: true }
     );
+    if (!card) {
+      res.status(404);
+      res.send({
+        message: "Передан несуществующий _id карточки.",
+      });
+      return;
+    }
     res.send(card);
   } catch (err) {
     if (err.name === "ValidationError") {
@@ -100,7 +114,7 @@ const dislikeCard = async (req, res) => {
       return;
     }
     if (err.name === "CastError") {
-      res.status(404);
+      res.status(400);
       res.send({
         message: "Передан несуществующий _id карточки.",
       });

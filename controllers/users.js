@@ -23,7 +23,7 @@ const getUserById = async (req, res) => {
     res.send({ name, about, avatar, _id });
   } catch (err) {
     if (err.name === "CastError") {
-      res.status(404);
+      res.status(400);
       res.send({
         message: "Пользователь по указанному _id не найден.",
       });
