@@ -1,4 +1,5 @@
-const express = require("express");
+const express = require('express');
+
 const userRoutes = express.Router();
 const {
   getUsers,
@@ -6,12 +7,12 @@ const {
   createUser,
   updateUser,
   updateAvatar,
-} = require("../controllers/users");
+} = require('../controllers/users');
 
-userRoutes.get("/", getUsers);
-userRoutes.get("/:userId", getUserById);
-userRoutes.post("/", express.json(), createUser);
-userRoutes.patch("/me", express.json(), updateUser);
-userRoutes.patch("/me/avatar", express.json(), updateAvatar);
+userRoutes.get('/', getUsers);
+userRoutes.get('/:userId', getUserById);
+userRoutes.post('/', express.json(), createUser);
+userRoutes.patch('/me', express.json(), updateUser);
+userRoutes.patch('/me/avatar', express.json(), updateAvatar);
 
 module.exports = userRoutes;

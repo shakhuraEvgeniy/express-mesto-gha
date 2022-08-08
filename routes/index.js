@@ -1,15 +1,16 @@
-const express = require("express");
-const routes = express.Router();
-const userRoutes = require("./userRoutes");
-const cardRoutes = require("./cardRoutes");
+const express = require('express');
 
-routes.use("/users", userRoutes);
-routes.use("/cards", cardRoutes);
-routes.use("*", (req, res) =>{
+const routes = express.Router();
+const userRoutes = require('./userRoutes');
+const cardRoutes = require('./cardRoutes');
+
+routes.use('/users', userRoutes);
+routes.use('/cards', cardRoutes);
+routes.use('*', (req, res) => {
   res.status(404);
-      res.send({
-        message: "Запрошена несуществующая страница.",
-      });
-})
+  res.send({
+    message: 'Запрошена несуществующая страница.',
+  });
+});
 
 module.exports = routes;

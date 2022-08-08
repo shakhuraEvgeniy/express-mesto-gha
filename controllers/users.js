@@ -1,14 +1,14 @@
-const User = require("../models/user");
+const User = require('../models/user');
 
 const getUsers = async (req, res) => {
   try {
     const users = await User.find({});
     res.send(users);
   } catch (err) {
-    if (err.name === "ValidationError") {
+    if (err.name === 'ValidationError') {
       res.status(400);
       res.send({
-        message: "Переданы некорректные данные при создании пользователя",
+        message: 'Переданы некорректные данные при создании пользователя',
       });
       return;
     }
@@ -19,20 +19,24 @@ const getUsers = async (req, res) => {
 
 const getUserById = async (req, res) => {
   try {
-    const { name, about, avatar, _id } = await User.findById(req.params.userId);
-    res.send({ name, about, avatar, _id });
+    const {
+      name, about, avatar, _id,
+    } = await User.findById(req.params.userId);
+    res.send({
+      name, about, avatar, _id,
+    });
   } catch (err) {
-    if (err.name === 'TypeError'){
+    if (err.name === 'TypeError') {
       res.status(404);
       res.send({
-        message: "Пользователь по указанному _id не найден.",
+        message: 'Пользователь по указанному _id не найден.',
       });
       return;
     }
-    if (err.name === "CastError") {
+    if (err.name === 'CastError') {
       res.status(400);
       res.send({
-        message: "Пользователь по указанному _id не найден.",
+        message: 'Пользователь по указанному _id не найден.',
       });
       return;
     }
@@ -47,10 +51,10 @@ const createUser = async (req, res) => {
     const user = await User.create({ name, about, avatar });
     res.send(user);
   } catch (err) {
-    if (err.name === "ValidationError") {
+    if (err.name === 'ValidationError') {
       res.status(400);
       res.send({
-        message: "Переданы некорректные данные при создании пользователя",
+        message: 'Переданы некорректные данные при создании пользователя',
       });
       return;
     }
@@ -66,21 +70,21 @@ const updateUser = async (req, res) => {
     const user = await User.findByIdAndUpdate(
       userId,
       { name, about },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
     res.send(user);
   } catch (err) {
-    if (err.name === "ValidationError") {
+    if (err.name === 'ValidationError') {
       res.status(400);
       res.send({
-        message: "Переданы некорректные данные при создании пользователя",
+        message: 'Переданы некорректные данные при создании пользователя',
       });
       return;
     }
-    if (err.name === "CastError") {
+    if (err.name === 'CastError') {
       res.status(404);
       res.send({
-        message: "Пользователь по указанному _id не найден.",
+        message: 'Пользователь по указанному _id не найден.',
       });
       return;
     }
@@ -96,21 +100,21 @@ const updateAvatar = async (req, res) => {
     const user = await User.findByIdAndUpdate(
       userId,
       { avatar },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
     res.send(user);
   } catch (err) {
-    if (err.name === "ValidationError") {
+    if (err.name === 'ValidationError') {
       res.status(400);
       res.send({
-        message: "Переданы некорректные данные при создании пользователя",
+        message: 'Переданы некорректные данные при создании пользователя',
       });
       return;
     }
-    if (err.name === "CastError") {
+    if (err.name === 'CastError') {
       res.status(404);
       res.send({
-        message: "Пользователь по указанному _id не найден.",
+        message: 'Пользователь по указанному _id не найден.',
       });
       return;
     }
