@@ -38,16 +38,16 @@ const createCard = async (req, res) => {
 
 const deleteCard = async (req, res) => {
   try {
-    const card = await Card.findByIdAndRemove(req.params.cardId);
-    if (!card) {
+    const card = await Card.findByIdAndRemove(req.params.cardId).orFail(new Error('noFoundId'));
+    res.send(card);
+  } catch (err) {
+    if (err.message === 'noFoundId') {
       res.status(404);
       res.send({
         message: 'Карточка с указанным _id не найдена.',
       });
       return;
     }
-    res.send(card);
-  } catch (err) {
     if (err.name === 'CastError') {
       res.status(400);
       res.send({
@@ -67,16 +67,16 @@ const likeCard = async (req, res) => {
       req.params.cardId,
       { $addToSet: { likes: userId } },
       { new: true, runValidators: true },
-    );
-    if (!card) {
+    ).orFail(new Error('noFoundId'));
+    res.send(card);
+  } catch (err) {
+    if (err.message === 'noFoundId') {
       res.status(404);
       res.send({
         message: 'Передан несуществующий _id карточки.',
       });
       return;
     }
-    res.send(card);
-  } catch (err) {
     if (err.name === 'ValidationError') {
       res.status(400);
       res.send({
@@ -103,16 +103,16 @@ const dislikeCard = async (req, res) => {
       req.params.cardId,
       { $pull: { likes: userId } },
       { new: true, runValidators: true },
-    );
-    if (!card) {
+    ).orFail(new Error('noFoundId'));
+    res.send(card);
+  } catch (err) {
+    if (err.message === 'noFoundId') {
       res.status(404);
       res.send({
         message: 'Передан несуществующий _id карточки.',
       });
       return;
     }
-    res.send(card);
-  } catch (err) {
     if (err.name === 'ValidationError') {
       res.status(400);
       res.send({
@@ -133,5 +133,9 @@ const dislikeCard = async (req, res) => {
 };
 
 module.exports = {
-  getCards, createCard, deleteCard, likeCard, dislikeCard,
+  getCards,
+  createCard,
+  deleteCard,
+  likeCard,
+  dislikeCard,
 };

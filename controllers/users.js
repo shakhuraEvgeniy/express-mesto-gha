@@ -1,19 +1,37 @@
 const User = require('../models/user');
 
+const sendError = (res, err) => {
+  if (err.name === 'ValidationError') {
+    res.status(400);
+    res.send({
+      message: 'Переданы некорректные данные при создании пользователя',
+    });
+    return;
+  }
+  if (err.name === 'TypeError') {
+    res.status(404);
+    res.send({
+      message: 'Пользователь по указанному _id не найден.',
+    });
+    return;
+  }
+  if (err.name === 'CastError') {
+    res.status(404);
+    res.send({
+      message: 'Пользователь по указанному _id не найден.',
+    });
+    return;
+  }
+  res.status(500);
+  res.send(err.message);
+};
+
 const getUsers = async (req, res) => {
   try {
     const users = await User.find({});
     res.send(users);
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      res.status(400);
-      res.send({
-        message: 'Переданы некорректные данные при создании пользователя',
-      });
-      return;
-    }
-    res.status(500);
-    res.send(err.message);
+    sendError(res, err);
   }
 };
 
@@ -23,25 +41,13 @@ const getUserById = async (req, res) => {
       name, about, avatar, _id,
     } = await User.findById(req.params.userId);
     res.send({
-      name, about, avatar, _id,
+      name,
+      about,
+      avatar,
+      _id,
     });
   } catch (err) {
-    if (err.name === 'TypeError') {
-      res.status(404);
-      res.send({
-        message: 'Пользователь по указанному _id не найден.',
-      });
-      return;
-    }
-    if (err.name === 'CastError') {
-      res.status(400);
-      res.send({
-        message: 'Пользователь по указанному _id не найден.',
-      });
-      return;
-    }
-    res.status(500);
-    res.send(err.message);
+    sendError(res, err);
   }
 };
 
@@ -74,22 +80,7 @@ const updateUser = async (req, res) => {
     );
     res.send(user);
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      res.status(400);
-      res.send({
-        message: 'Переданы некорректные данные при создании пользователя',
-      });
-      return;
-    }
-    if (err.name === 'CastError') {
-      res.status(404);
-      res.send({
-        message: 'Пользователь по указанному _id не найден.',
-      });
-      return;
-    }
-    res.status(500);
-    res.send(err.message);
+    sendError(res, err);
   }
 };
 
@@ -104,22 +95,7 @@ const updateAvatar = async (req, res) => {
     );
     res.send(user);
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      res.status(400);
-      res.send({
-        message: 'Переданы некорректные данные при создании пользователя',
-      });
-      return;
-    }
-    if (err.name === 'CastError') {
-      res.status(404);
-      res.send({
-        message: 'Пользователь по указанному _id не найден.',
-      });
-      return;
-    }
-    res.status(500);
-    res.send(err.message);
+    sendError(res, err);
   }
 };
 
