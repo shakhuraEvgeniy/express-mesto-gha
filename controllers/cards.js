@@ -1,19 +1,37 @@
 const Card = require('../models/card');
 
+const sendError = (res, err) => {
+  if (err.name === 'ValidationError') {
+    res.status(400);
+    res.send({
+      message: 'Переданы некорректные данные при создании карточки',
+    });
+    return;
+  }
+  if (err.message === 'noFoundId') {
+    res.status(404);
+    res.send({
+      message: 'Карточка с указанным _id не найдена.',
+    });
+    return;
+  }
+  if (err.name === 'CastError') {
+    res.status(400);
+    res.send({
+      message: 'Передан несуществующий _id карточки.',
+    });
+    return;
+  }
+  res.status(500);
+  res.send(err.message);
+};
+
 const getCards = async (req, res) => {
   try {
     const cards = await Card.find({});
     res.send(cards);
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      res.status(400);
-      res.send({
-        message: 'Переданы некорректные данные при создании карточки',
-      });
-      return;
-    }
-    res.status(500);
-    res.send(err.message);
+    sendError(res, err);
   }
 };
 
@@ -24,15 +42,7 @@ const createCard = async (req, res) => {
     const card = await Card.create({ name, link, owner });
     res.send(card);
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      res.status(400);
-      res.send({
-        message: 'Переданы некорректные данные при создании карточки',
-      });
-      return;
-    }
-    res.status(500);
-    res.send(err.message);
+    sendError(res, err);
   }
 };
 
@@ -41,13 +51,6 @@ const deleteCard = async (req, res) => {
     const card = await Card.findByIdAndRemove(req.params.cardId).orFail(new Error('noFoundId'));
     res.send(card);
   } catch (err) {
-    if (err.message === 'noFoundId') {
-      res.status(404);
-      res.send({
-        message: 'Карточка с указанным _id не найдена.',
-      });
-      return;
-    }
     if (err.name === 'CastError') {
       res.status(400);
       res.send({
@@ -55,8 +58,7 @@ const deleteCard = async (req, res) => {
       });
       return;
     }
-    res.status(500);
-    res.send(err.message);
+    sendError(res, err);
   }
 };
 
@@ -70,13 +72,6 @@ const likeCard = async (req, res) => {
     ).orFail(new Error('noFoundId'));
     res.send(card);
   } catch (err) {
-    if (err.message === 'noFoundId') {
-      res.status(404);
-      res.send({
-        message: 'Передан несуществующий _id карточки.',
-      });
-      return;
-    }
     if (err.name === 'ValidationError') {
       res.status(400);
       res.send({
@@ -84,15 +79,7 @@ const likeCard = async (req, res) => {
       });
       return;
     }
-    if (err.name === 'CastError') {
-      res.status(400);
-      res.send({
-        message: 'Передан несуществующий _id карточки.',
-      });
-      return;
-    }
-    res.status(500);
-    res.send(err.message);
+    sendError(res, err);
   }
 };
 
@@ -106,13 +93,6 @@ const dislikeCard = async (req, res) => {
     ).orFail(new Error('noFoundId'));
     res.send(card);
   } catch (err) {
-    if (err.message === 'noFoundId') {
-      res.status(404);
-      res.send({
-        message: 'Передан несуществующий _id карточки.',
-      });
-      return;
-    }
     if (err.name === 'ValidationError') {
       res.status(400);
       res.send({
@@ -120,15 +100,7 @@ const dislikeCard = async (req, res) => {
       });
       return;
     }
-    if (err.name === 'CastError') {
-      res.status(400);
-      res.send({
-        message: 'Передан несуществующий _id карточки.',
-      });
-      return;
-    }
-    res.status(500);
-    res.send(err.message);
+    sendError(res, err);
   }
 };
 
