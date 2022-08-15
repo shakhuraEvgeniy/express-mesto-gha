@@ -1,3 +1,9 @@
+const validator = require('validator');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+const { NODE_ENV, JWT_SECRET } = process.env;
+
 const User = require('../models/user');
 
 const sendError = (res, err) => {
@@ -19,6 +25,13 @@ const sendError = (res, err) => {
     res.status(404);
     res.send({
       message: 'Пользователь по указанному _id не найден.',
+    });
+    return;
+  }
+  if (err.message === 'noFoundEmail') {
+    res.status(401);
+    res.send({
+      message: 'Задан некорректный email.',
     });
     return;
   }
@@ -60,8 +73,24 @@ const getUserById = async (req, res) => {
 
 const createUser = async (req, res) => {
   try {
-    const { name, about, avatar } = req.body;
-    const user = await User.create({ name, about, avatar });
+    const {
+      name, about, avatar, email, password,
+    } = req.body;
+    if (!validator.isEmail(email)) {
+      res.status(400);
+      res.send({
+        message: 'Задан некорректный email.',
+      });
+      return;
+    }
+    const hash = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    });
     res.send(user);
   } catch (err) {
     if (err.name === 'ValidationError') {
@@ -106,10 +135,46 @@ const updateAvatar = async (req, res) => {
   }
 };
 
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!validator.isEmail(email)) {
+      throw new Error('noFoundEmail');
+    }
+    const user = await User.findOne({ email }).select('+password').orFail(new Error('noFoundEmail'));
+    const matched = await bcrypt.compare(password, user.password);
+    if (!matched) {
+      throw new Error('noFoundEmail');
+    }
+    const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
+    res.cookie('authorization', token, {
+      maxAge: 3600000 * 24 * 7,
+      httpOnly: true,
+    }).send({ _id: user._id });
+  } catch (err) {
+    sendError(res, err);
+  }
+};
+
+const getUser = async (req, res) => {
+  try {
+    const { _id } = req.user;
+    const { email } = await User.findById(_id);
+    res.send({
+      _id,
+      email,
+    });
+  } catch (err) {
+    sendError(res, err);
+  }
+};
+
 module.exports = {
   getUsers,
   getUserById,
   createUser,
   updateUser,
   updateAvatar,
+  login,
+  getUser,
 };

@@ -48,7 +48,7 @@ const createCard = async (req, res) => {
 
 const deleteCard = async (req, res) => {
   try {
-    const card = await Card.findByIdAndRemove(req.params.cardId).orFail(new Error('noFoundId'));
+    const card = await Card.findOneAndRemove({ _id: req.params.cardId, owner: req.user._id }).orFail(new Error('noFoundId'));
     res.send(card);
   } catch (err) {
     if (err.name === 'CastError') {
