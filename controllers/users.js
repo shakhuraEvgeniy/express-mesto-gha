@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 
 const BedRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
+const UnauthorizedError = require('../errors/UnauthorizedError');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -61,8 +62,8 @@ const getUserById = async (req, res, next) => {
       _id,
     });
   } catch (e) {
-    if (e.name === 'CastError') {
-      const err = new BedRequestError('Пользователь по указанному _id не найден.');
+    if (e.name === 'TypeError') {
+      const err = new NotFoundError('Пользователь по указанному _id не найден.');
       next(err);
       return;
     }
@@ -77,6 +78,10 @@ const createUser = async (req, res, next) => {
     } = req.body;
     if (!validator.isEmail(email)) {
       throw new BedRequestError('Задан некорректный email.');
+    }
+    const finded = await User.findOne({ email });
+    if (finded) {
+      throw new ConflictError('Пользователь с данным email уже зарегистрирован');
     }
     const hash = await bcrypt.hash(password, 10);
     const user = await User.create({
@@ -162,12 +167,12 @@ const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     if (!validator.isEmail(email)) {
-      throw new NotFoundError('Задан некорректный email или пароль.');
+      throw new UnauthorizedError('Задан некорректный email или пароль.');
     }
     const user = await User.findOne({ email }).select('+password').orFail(new Error('noFoundEmail'));
     const matched = await bcrypt.compare(password, user.password);
     if (!matched) {
-      throw new NotFoundError('Задан некорректный email или пароль.');
+      throw new UnauthorizedError('Задан некорректный email или пароль.');
     }
     const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
     res.cookie('authorization', token, {
@@ -182,11 +187,8 @@ const login = async (req, res, next) => {
 const getUser = async (req, res, next) => {
   try {
     const { _id } = req.user;
-    const { email } = await User.findById(_id);
-    res.send({
-      _id,
-      email,
-    });
+    const user = await User.findById(_id);
+    res.send(user);
   } catch (e) {
     next(e);
   }

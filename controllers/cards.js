@@ -1,6 +1,7 @@
 const Card = require('../models/card');
 const BedRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
+const ForbiddenError = require('../errors/ForbiddenError');
 
 // const sendError = (res, err) => {
 //   if (err.name === 'ValidationError') {
@@ -52,8 +53,12 @@ const createCard = async (req, res, next) => {
 
 const deleteCard = async (req, res, next) => {
   try {
-    const card = await Card.findOneAndRemove({ _id: req.params.cardId, owner: req.user._id }).orFail(new Error('noFoundId'));
-    res.send(card);
+    const card = await Card.findOne({ _id: req.params.cardId }).orFail(new NotFoundError('Карточка с указанным _id не найдена.'));
+    if (String(card.owner._id) !== req.user._id) {
+      throw new ForbiddenError('Недостаточно прав для удаления.');
+    }
+    const cardDelete = await Card.findOneAndRemove({ _id: req.params.cardId }).orFail(new NotFoundError('Карточка с указанным _id не найдена.'));
+    res.send(cardDelete);
   } catch (e) {
     if (e.name === 'CastError') {
       const err = new BedRequestError('Карточка с указанным _id не найдена.');
