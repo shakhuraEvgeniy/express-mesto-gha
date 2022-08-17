@@ -169,17 +169,30 @@ const login = async (req, res, next) => {
     if (!validator.isEmail(email)) {
       throw new UnauthorizedError('Задан некорректный email или пароль.');
     }
-    const user = await User.findOne({ email }).select('+password').orFail(new Error('noFoundEmail'));
+    const user = await User.findOne({ email })
+      .select('+password')
+      .orFail(new Error('noFoundEmail'));
     const matched = await bcrypt.compare(password, user.password);
     if (!matched) {
       throw new UnauthorizedError('Задан некорректный email или пароль.');
     }
-    const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
-    res.cookie('authorization', token, {
-      maxAge: 3600000 * 24 * 7,
-      httpOnly: true,
-    }).send({ _id: user._id });
+    const token = jwt.sign(
+      { _id: user._id },
+      NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+      { expiresIn: '7d' },
+    );
+    res
+      .cookie('authorization', token, {
+        maxAge: 3600000 * 24 * 7,
+        httpOnly: true,
+      })
+      .send({ _id: user._id });
   } catch (e) {
+    if (e.message === 'noFoundEmail') {
+      const err = new UnauthorizedError('Задан некорректный email или пароль.');
+      next(err);
+      return;
+    }
     next(e);
   }
 };

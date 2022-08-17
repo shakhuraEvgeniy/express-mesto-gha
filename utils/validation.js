@@ -1,9 +1,11 @@
-const validation = (v) => {
+const BadRequestError = require('../errors/BadRequestError');
+
+const validation = (url) => {
   const regex = /^https?:\/\/[\w-~:/?#[\]@!$&'()*+,;=]*/i;
-  if (v.match(regex)) {
-    return v;
+  if (!url.match(regex)) {
+    throw new BadRequestError('Ошибка в url аватара');
   }
-  return false;
+  return url;
 };
 
 module.exports = validation;
