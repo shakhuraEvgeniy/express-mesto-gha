@@ -9,6 +9,7 @@ const {
   updateAvatar,
   getUser,
 } = require('../controllers/users');
+const validation = require('../utils/validation');
 
 userRoutes.get('/', getUsers);
 userRoutes.patch('/me', express.json(), celebrate({
@@ -20,7 +21,7 @@ userRoutes.patch('/me', express.json(), celebrate({
 userRoutes.get('/me', getUser);
 userRoutes.patch('/me/avatar', express.json(), celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string(),
+    avatar: Joi.string().custom(validation),
   }),
 }), updateAvatar);
 userRoutes.get('/:userId', celebrate({

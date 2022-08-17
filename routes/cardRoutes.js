@@ -5,12 +5,13 @@ const cardRoutes = express.Router();
 const {
   getCards, createCard, deleteCard, likeCard, dislikeCard,
 } = require('../controllers/cards');
+const validation = require('../utils/validation');
 
 cardRoutes.get('/', getCards);
 cardRoutes.post('/', express.json(), celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
-    link: Joi.string().required(),
+    link: Joi.string().required().custom(validation),
   }),
 }), createCard);
 cardRoutes.delete('/:cardId', celebrate({

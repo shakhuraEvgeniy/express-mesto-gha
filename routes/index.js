@@ -9,6 +9,7 @@ const {
   login, createUser,
 } = require('../controllers/users');
 const NotFoundError = require('../errors/NotFoundError');
+const validation = require('../utils/validation');
 
 routes.post('/signin', express.json(), celebrate({
   body: Joi.object().keys({
@@ -20,7 +21,7 @@ routes.post('/signup', express.json(), celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string(),
+    avatar: Joi.string().custom(validation),
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8),
   }),
