@@ -12,14 +12,16 @@ const apiLimiter = rateLimit({
 
 const { PORT = 3000 } = process.env;
 const routes = require('./routes/index');
+const { requestLogger, errorLoger } = require('./middlewares/logger');
 
 const app = express();
 
 app.use(helmet());
 app.use(apiLimiter);
 mongoose.connect('mongodb://localhost:27017/mestodb');
-
+app.use(requestLogger);
 app.use(routes);
+app.use(errorLoger);
 app.use(errors());
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
